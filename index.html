@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reglamento Interno de Trabajo - UNAB 2026</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Mermaid JS para Diagramas -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Habilitamos el modo oscuro por clase
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        unab: {
+                            orange: '#ea580c', // Naranja corporativo UNAB
+                            blue: '#0f172a',   // Azul oscuro / Pizarra
+                            light: '#f8fafc',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(15px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Styles & Transitions */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Animaciones para las secciones */
+        .content-section {
+            display: none;
+            opacity: 0;
+        }
+        .content-section.active {
+            display: block;
+            opacity: 1; /* Failsafe: Garantiza visibilidad */
+            animation: customFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Declaración explícita de keyframes para evitar que Tailwind JIT lo ignore */
+        @keyframes customFadeInUp {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Contenedor de Diagramas de Alto Impacto (Se mantiene oscuro siempre por estética "Blueprint/Holograma") */
+        .diagram-container {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid #334155;
+            border-radius: 1.5rem;
+            padding: 3rem;
+            margin: 2.5rem 0;
+            display: flex;
+            justify-content: center;
+            box-shadow: inset 0 2px 20px rgba(0,0,0,0.5), 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .diagram-container::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 80%; height: 80%;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .diagram-container > div {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .diagram-container svg {
+            max-width: 100% !important;
+            height: auto !important;
+            transform: scale(1.05); 
+            transform-origin: center;
+        }
+
+        /* EFECTO GLASMORMISMO REDONDEADO EN LOS NODOS MERMAID */
+        .node rect, .node circle, .node polygon, .label-container, .actor {
+            fill: rgba(30, 41, 59, 0.7) !important; 
+            stroke: rgba(255, 255, 255, 0.15) !important;
+            stroke-width: 2px !important;
+            rx: 20px !important; /* Bordes redondeados */
+            ry: 20px !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)) !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Interacción Nodos */
+        .node:hover rect, .node:hover circle, .node:hover polygon, .actor:hover {
+            stroke: #06b6d4 !important;
+            fill: rgba(6, 182, 212, 0.15) !important;
+            filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.6)) !important;
+            transform: translateY(-3px);
+        }
+
+        .nodeLabel, .actor-name, text.actor > tspan {
+            color: #f8fafc !important; 
+            fill: #f8fafc !important;
+            font-weight: 600 !important;
+            font-size: 15px !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        /* =========================================================================
+           EFECTO DE LUZ PASANTE (DINÁMICO) EN TODAS LAS FLECHAS
+           ========================================================================= */
+        /* Optimización: Se agrupan todos los selectores de Mermaid (flowchart, graph y sequence) */
+        .edgePath path, path.flowchart-link, [class^="messageLine"] {
+            stroke: #06b6d4 !important;
+            stroke-width: 3.5px !important;
+            stroke-dasharray: 15, 15 !important; /* Guiones segmentados para el rayo de luz */
+            animation: energyFlow 1s linear infinite !important;
+            filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.9)) !important;
+        }
+
+        .marker, marker path { 
+            fill: #06b6d4 !important;
+            stroke: #06b6d4 !important;
+            filter: drop-shadow(0 0 8px rgba(6, 182, 212, 1)) !important;
+        }
+
+        @keyframes energyFlow {
+            from { stroke-dashoffset: 30; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Etiquetas de los conectores */
+        .edgeLabel, .labelBox {
+            background-color: rgba(15, 23, 42, 0.9) !important;
+            fill: rgba(15, 23, 42, 0.9) !important;
+            color: #22d3ee !important;
+            border-radius: 6px !important;
+            border: 1px solid rgba(6, 182, 212, 0.4) !important;
+        }
+        
+        .edgeLabel span, .labelText > tspan {
+            color: #22d3ee !important;
+            fill: #22d3ee !important;
+            font-weight: 600 !important;
+        }
+
+        /* Notas del Diagrama de Secuencia */
+        .note {
+            fill: rgba(234, 88, 12, 0.2) !important; 
+            stroke: rgba(234, 88, 12, 0.6) !important;
+            rx: 12px !important; ry: 12px !important;
+        }
+        .noteText > tspan { fill: #fff !important; font-weight: 500 !important; }
+        .messageText { fill: #22d3ee !important; stroke: none !important; font-weight: 600 !important; }
+
+        /* Acordeones Dinámicos */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+        }
+        .accordion-active .accordion-content {
+            max-height: 1000px; 
+            transition: max-height 0.4s ease-in-out;
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        .accordion-active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Componentes Específicos Modo Oscuro/Claro (Custom CSS que complementa Tailwind) */
+        html.dark .nota-importante {
+            background: linear-gradient(135deg, rgba(234, 88, 12, 0.1) 0%, rgba(15, 23, 42, 0.5) 100%);
+            border-color: #ea580c;
+        }
+        html:not(.dark) .nota-importante {
+            background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+            border-color: #ea580c;
+        }
+
+        html.dark .tip-pedagogico {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(15, 23, 42, 0.5) 100%);
+            border-color: #22c55e;
+        }
+        html:not(.dark) .tip-pedagogico {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            border-color: #22c55e;
+        }
+
+        /* Scrollbars elegantes */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        html.dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        html.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-900 transition-colors duration-300">
+
+    <!-- Menú Lateral (Sidebar) -->
+    <aside class="w-72 bg-unab-blue dark:bg-[#080d1a] text-slate-300 flex-shrink-0 h-full flex flex-col transition-all duration-300 z-40 absolute lg:relative -translate-x-full lg:translate-x-0 shadow-2xl border-r border-slate-800" id="sidebar">
+        
+        <!-- Header del Sidebar -->
+        <div class="h-24 flex items-center px-6 bg-slate-900 dark:bg-[#0a101f] border-b border-slate-800">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 text-white flex items-center justify-center text-2xl mr-4 shadow-lg shadow-orange-900/50">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <div>
+                <h1 class="text-white font-bold text-xl tracking-tight">RIT UNAB</h1>
+                <p class="text-xs text-orange-400 font-bold uppercase tracking-widest mt-1">Guía Dinámica</p>
+            </div>
+            <button class="lg:hidden ml-auto text-slate-400 hover:text-white" onclick="toggleSidebar()">
+                <i class="fa-solid fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Navegación Principal -->
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-2" id="nav-menu">
+            <p class="px-3 text-[10px] font-bold text-slate-500 dark:text-slate-600 uppercase tracking-widest mb-3">Conocimiento Institucional</p>
+            
+            <a onclick="showSection('introduccion')" data-target="introduccion" class="nav-link block px-4 py-3.5 rounded-xl bg-unab-orange text-white font-semibold cursor-pointer shadow-lg shadow-orange-900/30 transition-all flex items-center">
+                <i class="fa-solid fa-chart-pie w-6 text-center mr-3"></i> Dashboard Inicial
+            </a>
+            
+            <a onclick="showSection('jerarquia')" data-target="jerarquia" class="nav-link block px-4 py-3.5 rounded-xl text-slate-400 hover:bg-slate-800 dark:hover:bg-slate-800/50 hover:text-white cursor-pointer transition-all flex items-center">
+                <i class="fa-solid fa-sitemap w-6 text-center mr-3"></i> 1. Estructura y Principios
+            </a>
+            
+            <a onclick="showSection('vinculacion')" data-target="vinculacion" class="nav-link block px-4 py-3.5 rounded-xl text-slate-400 hover:bg-slate-800 dark:hover:bg-slate-800/50 hover:text-white cursor-pointer transition-all flex items-center">
+                <i class="fa-solid fa-file-signature w-6 text-center mr-3"></i> 2. Selección y Contratos
+            </a>
+            
+            <a onclick="showSection('jornada')" data-target="jornada" class="nav-link block px-4 py-3.5 rounded-xl text-slate-400 hover:bg-slate-800 dark:hover:bg-slate-800/50 hover:text-white cursor-pointer transition-all flex items-center">
+                <i class="fa-solid fa-business-time w-6 text-center mr-3"></i> 3. Jornada y Permisos
+            </a>
+            
+            <a onclick="showSection('disciplina')" data-target="disciplina" class="nav-link block px-4 py-3.5 rounded-xl text-slate-400 hover:bg-slate-800 dark:hover:bg-slate-800/50 hover:text-white cursor-pointer transition-all flex items-center">
+                <i class="fa-solid fa-gavel w-6 text-center mr-3"></i> 4. Régimen Disciplinario
+            </a>
+
+            <div class="my-6 border-t border-slate-800 mx-2"></div>
+            <p class="px-3 text-[10px] font-bold text-slate-500 dark:text-slate-600 uppercase tracking-widest mb-3">Herramientas</p>
+
+            <a onclick="showSection('glosario')" data-target="glosario" class="nav-link block px-4 py-3.5 rounded-xl text-slate-400 hover:bg-slate-800 dark:hover:bg-slate-800/50 hover:text-white cursor-pointer transition-all flex items-center">
+                <i class="fa-solid fa-book-open-reader w-6 text-center mr-3 text-blue-400"></i> Glosario de Términos
+            </a>
+
+            <a onclick="showSection('pdf-viewer')" data-target="pdf-viewer" class="nav-link block px-4 py-3.5 rounded-xl text-slate-400 hover:bg-slate-800 dark:hover:bg-slate-800/50 hover:text-white cursor-pointer transition-all flex items-center">
+                <i class="fa-solid fa-file-pdf w-6 text-center mr-3 text-red-400"></i> Ver PDF Oficial
+            </a>
+        </nav>
+
+        <!-- Footer del Sidebar -->
+        <div class="p-6 border-t border-slate-800 bg-slate-900 dark:bg-[#0a101f]">
+            <div class="flex items-center text-xs text-slate-400 bg-slate-800 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+                <i class="fa-solid fa-shield-check text-green-500 text-lg mr-3"></i> 
+                <span>Actualizado según Ley 2466 de 2025</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay oscuro para móvil -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-30 hidden lg:hidden transition-opacity" onclick="toggleSidebar()"></div>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative w-full bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+        
+        <!-- Header Superior con Efecto Glassmorphism -->
+        <header class="h-24 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center px-6 md:px-12 justify-between flex-shrink-0 z-20 sticky top-0 transition-colors duration-300">
+            <div class="flex items-center">
+                <button class="lg:hidden mr-5 text-slate-500 dark:text-slate-400 hover:text-unab-orange transition-colors" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
+                <div>
+                    <h2 class="font-extrabold text-slate-900 dark:text-white text-xl md:text-2xl tracking-tight transition-colors duration-300">Universidad Autónoma de Bucaramanga</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Dirección de Gestión Humana</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Botón Dark/Light Mode -->
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-sm border border-slate-200 dark:border-slate-700" title="Cambiar Tema">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+                
+                <div class="hidden sm:flex items-center text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors duration-300">
+                    <i class="fa-solid fa-graduation-cap text-unab-orange mr-2 text-lg"></i> Módulo Pedagógico
+                </div>
+            </div>
+        </header>
+
+        <!-- Área Scrollable de Contenido -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12" id="main-scroll">
+            
+            <div class="max-w-6xl mx-auto pb-16">
+
+                <!-- ============================================== -->
+                <!-- SECCIÓN: INICIO / DASHBOARD                    -->
+                <!-- ============================================== -->
+                <section id="introduccion" class="content-section active">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 md:p-14 relative overflow-hidden transition-colors duration-300">
+                        <!-- Elementos decorativos corporativos -->
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-orange-50 dark:bg-orange-900/10 rounded-bl-full -z-10 opacity-70 transition-colors duration-300"></div>
+                        <div class="absolute bottom-0 left-0 w-48 h-48 bg-blue-50 dark:bg-blue-900/10 rounded-tr-full -z-10 opacity-70 transition-colors duration-300"></div>
+
+                        <span class="inline-block px-4 py-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-bold rounded-full text-xs tracking-widest uppercase mb-6 border border-orange-200 dark:border-orange-800 transition-colors duration-300">Bienvenida Institucional</span>
+                        
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 leading-tight transition-colors duration-300">Conoce el <br><span class="text-unab-orange">Reglamento Interno de Trabajo</span></h2>
+                        <p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 mb-10 leading-relaxed max-w-3xl transition-colors duration-300">
+                            Esta plataforma transforma el documento legal tradicional en una experiencia dinámica. A través de esquemas visuales, tips y explicaciones detalladas, comprenderás tus derechos y deberes dentro de la comunidad UNAB.
+                        </p>
+                        
+                        <div class="grid md:grid-cols-3 gap-8">
+                            <div class="bg-white dark:bg-slate-800/50 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group">
+                                <div class="w-14 h-14 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center text-2xl mb-6 transition-colors duration-300 group-hover:scale-110">
+                                    <i class="fa-solid fa-users-gear"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-xl mb-3 transition-colors duration-300">Apropiación Normativa</h3>
+                                <p class="text-slate-600 dark:text-slate-400 leading-relaxed transition-colors duration-300">Garantizamos que todos los colaboradores conozcan las reglas claras para un entorno armónico y productivo.</p>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800/50 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group">
+                                <div class="w-14 h-14 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center text-2xl mb-6 transition-colors duration-300 group-hover:scale-110">
+                                    <i class="fa-solid fa-project-diagram"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-xl mb-3 transition-colors duration-300">Diagramas Dinámicos</h3>
+                                <p class="text-slate-600 dark:text-slate-400 leading-relaxed transition-colors duration-300">Mapas de procesos interactivos iluminados que explican desde la contratación hasta el debido proceso.</p>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800/50 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group">
+                                <div class="w-14 h-14 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl flex items-center justify-center text-2xl mb-6 transition-colors duration-300 group-hover:scale-110">
+                                    <i class="fa-solid fa-spell-check"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-xl mb-3 transition-colors duration-300">Glosario Legal</h3>
+                                <p class="text-slate-600 dark:text-slate-400 leading-relaxed transition-colors duration-300">Definiciones precisas y corporativas para eliminar la ambigüedad en la interpretación del texto.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================== -->
+                <!-- SECCIÓN: JERARQUÍA Y PRINCIPIOS                -->
+                <!-- ============================================== -->
+                <section id="jerarquia" class="content-section">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 md:p-14 transition-colors duration-300">
+                        <div class="flex items-center gap-5 mb-8 pb-8 border-b border-slate-100 dark:border-slate-700">
+                            <div class="w-16 h-16 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl flex items-center justify-center text-slate-700 dark:text-slate-300 text-3xl shadow-sm transition-colors duration-300"><i class="fa-solid fa-sitemap"></i></div>
+                            <div>
+                                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white transition-colors duration-300">Estructura y Principios</h2>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Capítulos I, II y III del RIT</p>
+                            </div>
+                        </div>
+                        
+                        <p class="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed transition-colors duration-300">El orden jerárquico no solo define el liderazgo, sino que establece las rutas formales para peticiones, autorizaciones y resolución de conflictos. Conocerlo es el primer paso para una gestión administrativa eficiente.</p>
+
+                        <!-- Diagrama Mermaid -->
+                        <div class="diagram-container">
+                            <div class="mermaid-target" data-graph="
+graph TD
+    A[Rectoría UNAB] --> B[Vicerrectores]
+    B --> C[Decanos de Facultad]
+    B --> D[Directores de Dependencia]
+    C --> E[Coordinadores Académicos]
+    D --> F[Jefes de Área Administrativa]
+    E --> G[Docentes y Auxiliares]
+    F --> H[Colaboradores Administrativos]
+                            "></div>
+                        </div>
+
+                        <!-- Sección de Acordeones -->
+                        <div class="mt-10 space-y-4">
+                            <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden accordion transition-colors duration-300">
+                                <button class="w-full px-6 py-5 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onclick="toggleAccordion(this)">
+                                    <span class="font-bold text-slate-800 dark:text-slate-100 text-lg">El Principio de Subordinación</span>
+                                    <i class="fa-solid fa-chevron-down text-slate-400 dark:text-slate-500 accordion-icon"></i>
+                                </button>
+                                <div class="accordion-content bg-white dark:bg-slate-800">
+                                    <div class="p-6 text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-slate-700 transition-colors duration-300">
+                                        Implica que el colaborador debe acatar las instrucciones, reglamentos y lineamientos dados por sus superiores jerárquicos, siempre que estos estén enmarcados en la legalidad, el respeto a la dignidad humana y las funciones propias de su cargo.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="nota-importante p-6 mt-8 shadow-sm border-l-[5px] rounded-r-xl transition-all duration-300">
+                            <h4 class="font-bold flex items-center mb-3 text-orange-900 dark:text-orange-400 text-lg transition-colors duration-300">
+                                <i class="fa-solid fa-hand-holding-hand mr-3 text-orange-600 dark:text-orange-500"></i> Tip Pedagógico: El Conducto Regular
+                            </h4>
+                            <p class="text-slate-700 dark:text-slate-300 leading-relaxed text-base transition-colors duration-300">
+                                El conducto regular es sagrado en la administración. Para cualquier novedad laboral, solicitud de vacaciones, reporte de incapacidad o propuesta, su <strong class="dark:text-white">primer eslabón siempre es su jefe inmediato</strong>. Omitir este paso y acudir directamente a Rectoría o Gestión Humana sin justa causa genera desorden institucional.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================== -->
+                <!-- SECCIÓN: VINCULACIÓN                           -->
+                <!-- ============================================== -->
+                <section id="vinculacion" class="content-section">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 md:p-14 transition-colors duration-300">
+                        <div class="flex items-center gap-5 mb-8 pb-8 border-b border-slate-100 dark:border-slate-700">
+                            <div class="w-16 h-16 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl flex items-center justify-center text-slate-700 dark:text-slate-300 text-3xl shadow-sm transition-colors duration-300"><i class="fa-solid fa-file-signature"></i></div>
+                            <div>
+                                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white transition-colors duration-300">Selección y Contratación</h2>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Capítulos IV al VIII - Ciclo de Vida Laboral</p>
+                            </div>
+                        </div>
+
+                        <p class="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed transition-colors duration-300">El proceso de vinculación garantiza que el talento humano de la UNAB cumple con los estándares éticos, técnicos y de salud ocupacional requeridos.</p>
+
+                        <!-- Diagrama Mermaid Dinámico -->
+                        <div class="diagram-container">
+                            <div class="mermaid-target" data-graph="
+flowchart TD
+    A([Convocatoria / Selección]) --> B[Entrevistas y Pruebas]
+    B --> C{¿Aprobado?}
+    C -- No --> Z([Fin del Proceso])
+    C -- Sí --> D[Examen Médico Ocupacional]
+    D --> E[Firma de Contrato]
+    E --> F[Periodo de Prueba]
+    F -- Evaluación Positiva --> G(((Consolidación Laboral)))
+    F -- Evaluación Negativa --> H(((Terminación de Contrato)))
+                            "></div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-8 mt-10">
+                            <div class="bg-slate-50 dark:bg-slate-800/80 rounded-2xl p-8 border border-slate-200 dark:border-slate-600 transition-colors duration-300 hover:border-blue-400 dark:hover:border-blue-500">
+                                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center transition-colors duration-300">
+                                    <i class="fa-solid fa-stethoscope text-blue-500 mr-3 text-2xl"></i> Exámenes de Ingreso
+                                </h3>
+                                <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4 transition-colors duration-300">Es un requisito legal <strong class="dark:text-white">innegociable</strong>. Determina la aptitud física y mental del candidato para el rol específico, previniendo enfermedades laborales futuras.</p>
+                                <ul class="list-disc list-inside space-y-2 text-sm text-slate-700 dark:text-slate-400 font-medium transition-colors duration-300">
+                                    <li>Debe realizarse antes del primer día de trabajo.</li>
+                                    <li>Es pagado íntegramente por la Universidad.</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-orange-50/50 dark:bg-orange-900/10 rounded-2xl p-8 border border-orange-100 dark:border-orange-900/50 transition-colors duration-300 hover:border-orange-400 dark:hover:border-orange-500">
+                                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center transition-colors duration-300">
+                                    <i class="fa-solid fa-hourglass-half text-orange-500 mr-3 text-2xl"></i> Periodo de Prueba
+                                </h3>
+                                <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4 transition-colors duration-300">Fase de evaluación mutua. La UNAB evalúa competencias, y el colaborador evalúa las condiciones ofrecidas.</p>
+                                <ul class="list-disc list-inside space-y-2 text-sm text-slate-700 dark:text-slate-400 font-medium transition-colors duration-300">
+                                    <li>Obligatoriamente <strong class="dark:text-white">debe constar por escrito</strong>.</li>
+                                    <li>Duración máxima: <strong class="dark:text-white">Dos (2) meses</strong> (Para contratos fijos &lt; 1 año, no supera 1/5 parte).</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================== -->
+                <!-- SECCIÓN: JORNADA Y PERMISOS                    -->
+                <!-- ============================================== -->
+                <section id="jornada" class="content-section">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 md:p-14 transition-colors duration-300">
+                        <div class="flex items-center gap-5 mb-8 pb-8 border-b border-slate-100 dark:border-slate-700">
+                            <div class="w-16 h-16 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl flex items-center justify-center text-slate-700 dark:text-slate-300 text-3xl shadow-sm transition-colors duration-300"><i class="fa-solid fa-business-time"></i></div>
+                            <div>
+                                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white transition-colors duration-300">Jornada y Permisos</h2>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Capítulos IX, X y Políticas de Ausentismo</p>
+                            </div>
+                        </div>
+
+                        <!-- Diagrama de Flujo: Permisos -->
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 transition-colors duration-300">Ruta Interactiva para Solicitud de Permisos</h3>
+                            <div class="diagram-container !mt-0">
+                                <div class="mermaid-target" data-graph="
+flowchart LR
+    A[Necesidad de Ausencia] --> B{¿Es Urgencia/Calamidad?}
+    B -- No --> C[Solicitud Previa al Jefe]
+    C --> D[Evaluación de Impacto en el Área]
+    D -- Aprobado --> E[Registro en Gestión Humana]
+    B -- Sí --> F[Aviso Inmediato al Jefe]
+    F --> G[Ausencia Justificada]
+    G --> H[Entrega de Soportes Posteriores]
+                                "></div>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-8 mb-10">
+                            <div class="border-2 border-slate-100 dark:border-slate-700 rounded-2xl p-8 hover:border-blue-200 dark:hover:border-blue-500 transition-colors duration-300">
+                                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-xl mb-5 transition-colors duration-300">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-3 transition-colors duration-300">Trabajo Suplementario (Extras)</h3>
+                                <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed transition-colors duration-300">
+                                    La regla de oro en la UNAB: <strong class="dark:text-white">Ninguna hora extra será reconocida ni pagada si no cuenta con autorización previa y expresa por escrito del jefe inmediato</strong>. Quedarse por voluntad propia no computa como hora extra.
+                                </p>
+                            </div>
+
+                            <div class="border-2 border-slate-100 dark:border-slate-700 rounded-2xl p-8 hover:border-red-200 dark:hover:border-red-500 transition-colors duration-300">
+                                <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center text-xl mb-5 transition-colors duration-300">
+                                    <i class="fa-solid fa-briefcase-medical"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-3 transition-colors duration-300">Incapacidades Médicas</h3>
+                                <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed transition-colors duration-300">
+                                    Debe dar aviso el primer día de ausencia a su jefe directo. Es responsabilidad ineludible radicar o enviar a Gestión Humana el soporte original emitido por la EPS (no médicos particulares).
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Tip Pedagógico -->
+                        <div class="tip-pedagogico p-6 shadow-sm border-l-[5px] rounded-r-xl transition-all duration-300">
+                            <h4 class="font-bold flex items-center mb-2 text-green-900 dark:text-green-400 text-lg transition-colors duration-300">
+                                <i class="fa-solid fa-mug-hot mr-3 text-green-600 dark:text-green-500"></i> ¿Sabías qué? Tiempos de Descanso
+                            </h4>
+                            <p class="text-slate-700 dark:text-slate-300 leading-relaxed text-base transition-colors duration-300">
+                                El tiempo concedido durante la jornada para tomar alimentos (almuerzo) <strong class="dark:text-white">no se computa como parte de la jornada laboral efectiva</strong>. Es un tiempo de desconexión legal necesario para su bienestar.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================== -->
+                <!-- SECCIÓN: DISCIPLINA                            -->
+                <!-- ============================================== -->
+                <section id="disciplina" class="content-section">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 md:p-14 transition-colors duration-300">
+                        <div class="flex items-center gap-5 mb-8 pb-8 border-b border-slate-100 dark:border-slate-700">
+                            <div class="w-16 h-16 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl flex items-center justify-center text-slate-700 dark:text-slate-300 text-3xl shadow-sm transition-colors duration-300"><i class="fa-solid fa-gavel"></i></div>
+                            <div>
+                                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white transition-colors duration-300">Régimen Disciplinario</h2>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Garantía del Debido Proceso y Sanciones</p>
+                            </div>
+                        </div>
+
+                        <p class="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed transition-colors duration-300">El RIT busca preservar el orden y el respeto mutuo. Ante el incumplimiento de deberes institucionales, se activa un proceso disciplinario cuyo principio máximo es el <strong class="dark:text-white">Derecho a la Defensa</strong>.</p>
+
+                        <!-- Diagrama Mermaid -->
+                        <div class="diagram-container mb-10">
+                            <div class="mermaid-target" data-graph="
+sequenceDiagram
+    participant GH as Gestión Humana
+    participant C as Colaborador
+    GH->>C: 1. Citación a Descargos
+    C->>GH: 2. Diligencia y Pruebas
+    GH->>GH: 3. Análisis Evidencias
+    alt Falta Comprobada
+        GH->>C: 4a. Sanción o Despido
+    else Justificada
+        GH->>C: 4b. Archivo
+    end
+                            "></div>
+                        </div>
+
+                        <!-- Faltas y Consecuencias -->
+                        <div class="grid lg:grid-cols-2 gap-8">
+                            <div class="bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/50 rounded-2xl p-8 transition-colors duration-300">
+                                <h3 class="font-bold text-red-900 dark:text-red-400 text-xl mb-4 border-b border-red-200 dark:border-red-900/50 pb-3 flex items-center transition-colors duration-300">
+                                    <i class="fa-solid fa-triangle-exclamation mr-3 text-red-600 dark:text-red-500"></i> Faltas Graves (Justa Causa)
+                                </h3>
+                                <p class="text-slate-700 dark:text-slate-300 text-sm mb-4 transition-colors duration-300">Constituyen motivos para terminar el contrato laboral unilateralmente sin pago de indemnización:</p>
+                                <ul class="list-none space-y-3">
+                                    <li class="flex items-start text-sm text-slate-700 dark:text-slate-300 transition-colors duration-300"><i class="fa-solid fa-circle-xmark text-red-500 mt-1 mr-3"></i> Todo acto de violencia, injuria o mal trato contra compañeros o superiores.</li>
+                                    <li class="flex items-start text-sm text-slate-700 dark:text-slate-300 transition-colors duration-300"><i class="fa-solid fa-circle-xmark text-red-500 mt-1 mr-3"></i> Violación de confidencialidad o revelación de secretos técnicos.</li>
+                                    <li class="flex items-start text-sm text-slate-700 dark:text-slate-300 transition-colors duration-300"><i class="fa-solid fa-circle-xmark text-red-500 mt-1 mr-3"></i> Presentarse al trabajo bajo el influjo de narcóticos o alcohol.</li>
+                                    <li class="flex items-start text-sm text-slate-700 dark:text-slate-300 transition-colors duration-300"><i class="fa-solid fa-circle-xmark text-red-500 mt-1 mr-3"></i> El acoso laboral comprobado (Ley 1010).</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/50 rounded-2xl p-8 transition-colors duration-300">
+                                <h3 class="font-bold text-blue-900 dark:text-blue-400 text-xl mb-4 border-b border-blue-200 dark:border-blue-900/50 pb-3 flex items-center transition-colors duration-300">
+                                    <i class="fa-solid fa-scale-balanced mr-3 text-blue-600 dark:text-blue-500"></i> Escala de Sanciones
+                                </h3>
+                                <p class="text-slate-700 dark:text-slate-300 text-sm mb-4 transition-colors duration-300">Si la falta no amerita despido, se aplican medidas disciplinarias proporcionales a la gravedad:</p>
+                                <ul class="list-none space-y-4">
+                                    <li class="flex items-start text-sm text-slate-700 dark:text-slate-300 transition-colors duration-300">
+                                        <div class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-bold px-2 py-1 rounded text-xs mr-3 mt-0.5 transition-colors duration-300">1</div>
+                                        <span><strong class="dark:text-white">Llamado de atención verbal o escrito</strong> (Amonestación con copia a HV).</span>
+                                    </li>
+                                    <li class="flex items-start text-sm text-slate-700 dark:text-slate-300 transition-colors duration-300">
+                                        <div class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-bold px-2 py-1 rounded text-xs mr-3 mt-0.5 transition-colors duration-300">2</div>
+                                        <span><strong class="dark:text-white">Suspensión del trabajo</strong> por primera vez (hasta por 8 días). Implica descuento salarial.</span>
+                                    </li>
+                                    <li class="flex items-start text-sm text-slate-700 dark:text-slate-300 transition-colors duration-300">
+                                        <div class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-bold px-2 py-1 rounded text-xs mr-3 mt-0.5 transition-colors duration-300">3</div>
+                                        <span><strong class="dark:text-white">Suspensión por reincidencia</strong> (hasta por dos meses).</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================== -->
+                <!-- SECCIÓN: GLOSARIO ESTRUCTURADO                 -->
+                <!-- ============================================== -->
+                <section id="glosario" class="content-section">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 md:p-14 transition-colors duration-300">
+                        <div class="flex items-center gap-5 mb-10 pb-8 border-b border-slate-100 dark:border-slate-700">
+                            <div class="w-16 h-16 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl flex items-center justify-center text-blue-500 dark:text-blue-400 text-3xl shadow-sm transition-colors duration-300"><i class="fa-solid fa-book-open-reader"></i></div>
+                            <div>
+                                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white transition-colors duration-300">Glosario Legal</h2>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Diccionario de términos del Reglamento Interno</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 rounded-xl p-6 transition-all duration-300 hover:border-unab-orange dark:hover:border-orange-500 hover:shadow-md hover:-translate-y-1">
+                                <dt class="font-bold text-slate-900 dark:text-white text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-user-shield text-unab-orange"></i> Acoso Laboral</dt>
+                                <dd class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Toda conducta persistente y demostrable ejercida para infundir miedo o intimidación. Regulado según Ley 1010 de 2006.</dd>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 rounded-xl p-6 transition-all duration-300 hover:border-unab-orange dark:hover:border-orange-500 hover:shadow-md hover:-translate-y-1">
+                                <dt class="font-bold text-slate-900 dark:text-white text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-house-chimney-crack text-unab-orange"></i> Calamidad Doméstica</dt>
+                                <dd class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Situación fortuita o de fuerza mayor que afecta la vida del colaborador. Otorga derecho a un permiso temporal remunerado.</dd>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 rounded-xl p-6 transition-all duration-300 hover:border-unab-orange dark:hover:border-orange-500 hover:shadow-md hover:-translate-y-1">
+                                <dt class="font-bold text-slate-900 dark:text-white text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-comments text-unab-orange"></i> Descargos</dt>
+                                <dd class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Diligencia legal y formal donde el trabajador presenta su versión y pruebas de defensa frente a una presunta falta.</dd>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 rounded-xl p-6 transition-all duration-300 hover:border-unab-orange dark:hover:border-orange-500 hover:shadow-md hover:-translate-y-1">
+                                <dt class="font-bold text-slate-900 dark:text-white text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-gavel text-unab-orange"></i> Justa Causa</dt>
+                                <dd class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Motivos tipificados por la Ley (Art. 62 del CST) que facultan a la Universidad para terminar el contrato laboral de forma inmediata.</dd>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================== -->
+                <!-- SECCIÓN: PDF VIEWER                            -->
+                <!-- ============================================== -->
+                <section id="pdf-viewer" class="content-section">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 md:p-10 transition-colors duration-300">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-6 border-b border-slate-100 dark:border-slate-700 gap-4">
+                            <div class="flex items-center gap-5">
+                                <div class="w-14 h-14 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 rounded-xl flex items-center justify-center text-red-600 dark:text-red-500 text-2xl shadow-sm transition-colors duration-300"><i class="fa-solid fa-file-pdf"></i></div>
+                                <div>
+                                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white transition-colors duration-300">Documento Oficial</h2>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Fuente: Repositorio Oficial UNAB</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 w-full md:w-auto">
+                                <a href="https://unab.edu.co/wp-content/uploads/2022/10/UNAB-RIT-26-marzo-2026-final.pdf" target="_blank" class="flex-1 md:flex-none flex items-center justify-center px-4 py-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-bold transition-all shadow-md">
+                                    <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Abrir PDF
+                                </a>
+                                <button onclick="reloadPDF()" class="flex-1 md:flex-none flex items-center justify-center px-4 py-2 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold transition-colors border border-slate-200 dark:border-slate-600">
+                                    <i class="fa-solid fa-rotate-right mr-2"></i> Recargar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50/50 dark:bg-blue-900/20 p-5 rounded-xl mb-6 border border-blue-100 dark:border-blue-900/50 text-sm text-slate-700 dark:text-slate-300 flex items-start transition-colors duration-300">
+                            <i class="fa-solid fa-circle-info text-blue-500 dark:text-blue-400 mt-0.5 mr-3 text-xl"></i>
+                            <div>
+                                <strong class="text-slate-900 dark:text-white block mb-1">Motor de Visualización Inteligente:</strong> 
+                                Utiliza la tecnología de Google Docs Viewer para garantizar compatibilidad móvil y saltar problemas de caché con el archivo del servidor UNAB.
+                            </div>
+                        </div>
+
+                        <div class="w-full h-[75vh] rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 relative shadow-inner flex items-center justify-center transition-colors duration-300">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 z-0">
+                                <i class="fa-solid fa-spinner fa-spin text-5xl mb-4 text-unab-orange dark:text-orange-500"></i>
+                                <p class="font-semibold text-lg">Conectando con el servidor...</p>
+                            </div>
+                            <iframe id="pdf-iframe" class="w-full h-full relative z-10 transition-opacity duration-500" style="border: none; background: transparent;" title="PDF RIT UNAB"></iframe>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+            
+            <!-- Footer -->
+            <footer class="max-w-6xl mx-auto flex flex-col items-center text-center text-sm text-slate-400 dark:text-slate-500 pb-10 pt-6 transition-colors duration-300">
+                <div class="w-16 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mb-6 transition-colors duration-300"></div>
+                <p class="font-bold text-slate-500 dark:text-slate-400 text-base mb-1 transition-colors duration-300">Universidad Autónoma de Bucaramanga</p>
+                <p>Módulo interactivo pedagógico desarrollado para la socialización de la Resolución 2026.</p>
+                <p class="mt-2 text-xs opacity-70">Para consultas con efectos jurídicos, remítase siempre al documento oficial en PDF.</p>
+            </footer>
+
+        </div>
+    </main>
+
+    <!-- Lógica de Interfaz, Renderizado y Tema -->
+    <script>
+        // --- 1. CONFIGURACIÓN DEL TEMA (DARK/LIGHT MODE) ---
+        function initTheme() {
+            // Verificar preferencia guardada o sistema
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateThemeIcon();
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.theme = isDark ? 'dark' : 'light';
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const icon = document.getElementById('theme-icon');
+            if (isDark) {
+                icon.className = 'fa-solid fa-sun text-yellow-400 text-lg';
+            } else {
+                icon.className = 'fa-solid fa-moon text-slate-600 text-lg';
+            }
+        }
+
+        // Ejecutar inicialización de tema
+        initTheme();
+
+        // --- 2. CONFIGURACIÓN ROBUSTA DE MERMAID ---
+        mermaid.initialize({ 
+            startOnLoad: false,
+            theme: 'dark', // Se mantiene 'dark' como base estética del contenedor (Holograma/Blueprint)
+            themeVariables: {
+                fontFamily: 'Inter',
+                background: 'transparent'
+            }
+        });
+
+        const renderedDiagrams = new Set();
+
+        // --- 3. SISTEMA DE NAVEGACIÓN Y RENDERIZADO "LAZY" ---
+        async function showSection(sectionId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+
+            const target = document.getElementById(sectionId);
+            if(target) {
+                target.classList.add('active');
+                
+                // Renderizado Lazy de Diagramas
+                const mermaidTargets = target.querySelectorAll('.mermaid-target');
+                for (let el of mermaidTargets) {
+                    if (!renderedDiagrams.has(el)) {
+                        // Optimización: Fallback al textContent por seguridad si falta data-graph
+                        let graphDefinition = (el.getAttribute('data-graph') || el.textContent || '').trim();
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        
+                        try {
+                            const { svg } = await mermaid.render(id, graphDefinition);
+                            el.innerHTML = svg;
+                            renderedDiagrams.add(el);
+                        } catch (e) {
+                            console.error("Error Mermaid:", e);
+                            el.innerHTML = `<div class="bg-red-50 text-red-500 p-4 rounded border"><i class="fa-solid fa-bug mr-2"></i>Error generando diagrama.</div>`;
+                        }
+                    }
+                }
+
+                if (sectionId === 'pdf-viewer') {
+                    loadPDF();
+                }
+            }
+
+            // Estilos visuales del menú lateral (Soporta Dark Mode)
+            const links = document.querySelectorAll('.nav-link');
+            links.forEach(link => {
+                link.classList.remove('bg-unab-orange', 'text-white', 'shadow-lg', 'shadow-orange-900/30');
+                link.classList.add('text-slate-400', 'hover:bg-slate-800', 'dark:hover:bg-slate-800/50', 'hover:text-white');
+            });
+
+            const activeLink = document.querySelector(`[data-target="${sectionId}"]`);
+            if(activeLink) {
+                activeLink.classList.remove('text-slate-400', 'hover:bg-slate-800', 'dark:hover:bg-slate-800/50', 'hover:text-white');
+                activeLink.classList.add('bg-unab-orange', 'text-white', 'shadow-lg', 'shadow-orange-900/30');
+            }
+
+            if(window.innerWidth < 1024) toggleSidebar();
+            
+            // Scroll suave hacia arriba usando el contenedor correcto
+            document.getElementById('main-scroll').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- 4. ACORDEONES DINÁMICOS ---
+        function toggleAccordion(button) {
+            const accordionItem = button.parentElement;
+            accordionItem.classList.toggle('accordion-active');
+        }
+
+        // --- 5. MENÚ HAMBURGUESA ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            if(sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // --- 6. VISOR PDF AVANZADO ---
+        let pdfLoaded = false;
+        const pdfDirectURL = "https://unab.edu.co/wp-content/uploads/2022/10/UNAB-RIT-26-marzo-2026-final.pdf";
+        
+        function loadPDF(forceReload = false) {
+            if (!pdfLoaded || forceReload) {
+                const iframe = document.getElementById('pdf-iframe');
+                iframe.style.opacity = '0'; // Efecto fade in
+                
+                const cacheBuster = new Date().getTime(); 
+                const googleDocsViewer = `https://docs.google.com/gview?url=${encodeURIComponent(pdfDirectURL)}&embedded=true`;
+                
+                iframe.src = forceReload ? `${googleDocsViewer}&timestamp=${cacheBuster}` : googleDocsViewer;
+                
+                iframe.onload = () => { iframe.style.opacity = '1'; };
+                pdfLoaded = true;
+            }
+        }
+
+        function reloadPDF() {
+            loadPDF(true);
+        }
+    </script>
+</body>
+</html>
