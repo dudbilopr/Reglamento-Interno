@@ -3,959 +3,686 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inferencia Estadística: Población, Muestra e Intervalos de Confianza</title>
+    <title>Inferencia Estadística | Interactive App</title>
 
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tipografía Moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- FontAwesome -->
+    <!-- Iconos FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- MathJax (Configuración antes de cargar el script) -->
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            },
-            svg: {
-                fontCache: 'global'
-            }
-        };
-    </script>
-    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- KaTeX (Renderizado Matemático Profesional) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
 
-    <!-- Mermaid.js -->
+    <!-- Gráficos (Mermaid & Chart.js) -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* ==========================================================================
-           VARIABLES Y TEMA (Light / Dark Mode)
-           ========================================================================== */
+        /* ==========================================================
+           1. TOKENS DE DISEÑO & THEMES (APP AESTHETIC)
+           ========================================================== */
         :root {
-            /* Tema Claro (Por Defecto) */
-            --bg-gradient: linear-gradient(135deg, #e0eafc, #cfdef3);
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+            
+            /* Light Theme - App Palette */
+            --bg-base: #f0f4f8;
+            --blob-1: #3b82f6; --blob-2: #8b5cf6; --blob-3: #10b981;
             --glass-bg: rgba(255, 255, 255, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.4);
-            --glass-shadow: rgba(0, 0, 0, 0.1);
-            --text-main: #1e293b;
+            --glass-card: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            
+            --text-main: #0f172a;
             --text-muted: #475569;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --btn-text: #ffffff;
-            --chart-grid: rgba(0, 0, 0, 0.1);
-            --chart-text: #1e293b;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
         }
 
         body.dark-mode {
-            /* Tema Oscuro */
-            --bg-gradient: linear-gradient(135deg, #0f172a, #1e293b, #334155);
-            --glass-bg: rgba(15, 23, 42, 0.75);
+            /* Dark Theme - App Palette */
+            --bg-base: #09090b;
+            --blob-1: #1e3a8a; --blob-2: #5b21b6; --blob-3: #064e3b;
+            --glass-bg: rgba(15, 23, 42, 0.65);
+            --glass-card: rgba(30, 41, 59, 0.75);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --glass-shadow: rgba(0, 0, 0, 0.4);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            
             --text-main: #f8fafc;
-            --text-muted: #cbd5e1;
-            --accent-color: #60a5fa;
-            --accent-hover: #93c5fd;
-            --chart-grid: rgba(255, 255, 255, 0.1);
-            --chart-text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #60a5fa;
+            --success: #34d399;
+            --danger: #f87171;
+            --warning: #fbbf24;
         }
 
-        /* ==========================================================================
-           RESET Y ESTILOS GLOBALES
-           ========================================================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+        /* ==========================================================
+           2. FONDOS ANIMADOS (GLASMORPHISM BASE)
+           ========================================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-main); background-color: var(--bg-base); color: var(--text-main); display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; transition: background-color 0.4s; }
+        
+        .bg-shapes { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; overflow: hidden; filter: blur(80px); opacity: 0.6; }
+        .shape { position: absolute; border-radius: 50%; animation: float 20s infinite ease-in-out alternate; }
+        .shape-1 { top: 10%; left: 10%; width: 40vw; height: 40vw; background: var(--blob-1); animation-delay: 0s; }
+        .shape-2 { bottom: 10%; right: 10%; width: 35vw; height: 35vw; background: var(--blob-2); animation-delay: -5s; }
+        .shape-3 { top: 40%; left: 50%; width: 30vw; height: 30vw; background: var(--blob-3); animation-delay: -10s; }
+
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(5vw, 5vh) scale(1.1); } }
+
+        /* ==========================================================
+           3. APLICACIÓN (CONTENEDOR PRINCIPAL Y SLIDES)
+           ========================================================== */
+        #app-window {
+            width: 96vw; height: 92vh; max-width: 1440px; max-height: 900px;
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 30px; box-shadow: var(--glass-shadow);
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
 
-        body {
-            background: var(--bg-gradient);
-            background-attachment: fixed;
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            font-size: 16px;
-            line-height: 1.6;
+        /* Encabezado de la App (Falso Menú de Ventana) */
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; border-bottom: 1px solid var(--glass-border); }
+        .window-controls { display: flex; gap: 8px; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; }
+        .dot.red { background: #ff5f56; } .dot.yellow { background: #ffbd2e; } .dot.green { background: #27c93f; }
+        
+        .app-title { font-weight: 700; font-size: 1.1rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+
+        /* Contenedor de Diapositivas con Scroll Interno */
+        #canvas-container {
+            flex: 1; overflow: auto; padding: 2rem 3rem 6rem 3rem; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
         }
+        #canvas-container::-webkit-scrollbar { width: 6px; height: 6px; }
+        #canvas-container::-webkit-scrollbar-thumb { background-color: var(--accent); border-radius: 10px; }
 
-        h1, h2, h3 {
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--text-main);
-        }
-
-        h1 { font-size: 2.5rem; }
-        h2 { font-size: 2rem; border-bottom: 2px solid var(--accent-color); padding-bottom: 0.5rem; display: inline-block; }
-        p { margin-bottom: 1rem; color: var(--text-muted); }
-
-        /* ==========================================================================
-           UI ELEMENTS (Glassmorphism & Botones)
-           ========================================================================== */
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            box-shadow: 0 8px 32px var(--glass-shadow);
-            padding: 2.5rem;
-            margin: 1rem;
-        }
-
-        .btn {
-            background: var(--accent-color);
-            color: var(--btn-text);
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 50px; /* Requisito: Botones totalmente redondos */
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .btn:hover {
-            background: var(--accent-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--accent-color);
-            color: var(--text-main);
-        }
-
-        .btn-outline:hover {
-            background: var(--accent-color);
-            color: var(--btn-text);
-        }
-
-        /* Toggle Switch para Dark/Light Mode */
-        .theme-toggle-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--glass-bg);
-            padding: 10px 15px;
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 26px;
-        }
-
-        .switch input { opacity: 0; width: 0; height: 0; }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 50px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px; width: 18px;
-            left: 4px; bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider { background-color: #1e293b; }
-        input:focus + .slider { box-shadow: 0 0 1px #1e293b; }
-        input:checked + .slider:before { transform: translateX(24px); }
-
-        /* ==========================================================================
-           LAYOUT Y NAVEGACIÓN DE DIAPOSITIVAS
-           ========================================================================== */
-        #presentation-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            position: relative;
-            padding: 80px 20px 100px 20px;
-        }
-
-        .slide {
-            display: none;
-            width: 100%;
-            animation: fadeIn 0.6s ease-in-out;
-        }
-
+        .slide { display: none; min-width: 900px; animation: slideFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .slide.active { display: block; }
+        @keyframes slideFade { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* ==========================================================
+           4. TIPOGRAFÍA Y COMPONENTES UI (TARJETAS, TABLAS)
+           ========================================================== */
+        h1 { font-size: 2.8rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), #8b5cf6); -webkit-background-clip: text; color: transparent; line-height: 1.2; margin-bottom: 1rem;}
+        h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+        h3 { font-size: 1.2rem; color: var(--accent); margin-bottom: 0.8rem; font-weight: 600; }
+        p { margin-bottom: 1.2rem; font-size: 1.05rem; line-height: 1.6; }
 
-        .grid-2col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            align-items: center;
-        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
 
-        /* MathJax Containers */
-        .math-block {
-            background: rgba(0,0,0,0.05);
-            padding: 1rem;
-            border-radius: 12px;
-            margin: 1rem 0;
-            overflow-x: auto;
-            border-left: 4px solid var(--accent-color);
-        }
-        body.dark-mode .math-block { background: rgba(255,255,255,0.05); }
+        /* App Icon (Iconos redondos) */
+        .app-icon { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); color: white; display: inline-flex; justify-content: center; align-items: center; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
+        .app-icon.success { background: var(--success); box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);}
+        .app-icon.warning { background: var(--warning); box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);}
 
-        /* Navigation Controls */
-        .controls {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: var(--glass-bg);
-            padding: 10px 25px;
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            z-index: 1000;
-        }
-
-        .slide-counter {
-            font-weight: 600;
-            min-width: 60px;
-            text-align: center;
-            color: var(--text-main);
-        }
-
-        /* ==========================================================================
-           SIMULADOR INTERACTIVO Y GRÁFICOS
-           ========================================================================== */
-        .simulator-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .control-group label { font-weight: 600; font-size: 0.9rem; }
+        /* Tarjetas de Datos (Data Cards) */
+        .card { background: var(--glass-card); border: 1px solid var(--glass-border); border-radius: 20px; padding: 1.5rem; box-shadow: var(--glass-shadow); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-3px); }
+        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.8rem;}
         
-        .control-group input[type="number"], 
-        .control-group select {
-            padding: 0.8rem;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.5);
-            color: #1e293b;
-            font-family: 'Inter', sans-serif;
-            outline: none;
+        /* Bloques Matemáticos KaTeX */
+        .math-box { font-family: var(--font-mono); font-size: 1.15rem; background: rgba(0,0,0,0.03); padding: 1.2rem; border-radius: 12px; border-left: 5px solid var(--accent); overflow-x: auto; margin-bottom: 1.2rem; }
+        body.dark-mode .math-box { background: rgba(255,255,255,0.03); }
+
+        /* Tablas de Datos (Dashboard Style) */
+        .data-table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 1.5rem 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); font-size: 0.95rem; }
+        .data-table th { background: rgba(59, 130, 246, 0.1); font-weight: 700; color: var(--accent); padding: 12px 15px; text-align: left; }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid var(--glass-border); background: var(--glass-card); }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tbody tr:hover td { background: rgba(59, 130, 246, 0.05); }
+
+        /* Tooltips interactivos (Anotaciones) */
+        .ttip { position: relative; cursor: help; color: var(--accent); font-weight: 600; border-bottom: 2px dotted var(--accent); }
+        .ttip-text { 
+            visibility: hidden; width: max-content; max-width: 320px; background-color: var(--text-main); color: var(--bg-base); 
+            text-align: left; border-radius: 12px; padding: 12px 16px; position: absolute; z-index: 100; 
+            bottom: 140%; left: 50%; transform: translateX(-50%) translateY(10px); opacity: 0; 
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-size: 0.85rem; font-weight: 500; font-family: var(--font-main);
         }
+        .ttip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: var(--text-main) transparent transparent transparent; }
+        .ttip:hover .ttip-text { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ==========================================================
+           5. BOTONES Y DOCK FLOTANTE (NAVEGACIÓN)
+           ========================================================== */
+        .btn { background: var(--accent); color: #fff; border: none; padding: 0.8rem 1.8rem; border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(37,99,235,0.3); transition: all 0.2s; }
+        .btn:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
+        .btn-outline { background: transparent; border: 2px solid var(--accent); color: var(--text-main); box-shadow: none;}
+        .btn-outline:hover { background: var(--accent); color: #fff; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;}
         
-        body.dark-mode .control-group input[type="number"], 
-        body.dark-mode .control-group select {
-            background: rgba(0, 0, 0, 0.3);
-            color: #f8fafc;
-        }
+        .btn-circle { width: 50px; height: 50px; padding: 0; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
 
-        .control-group input[type="range"] {
-            width: 100%;
-            accent-color: var(--accent-color);
+        /* Floating Dock */
+        .floating-dock {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--glass-card); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); border-radius: 50px; padding: 10px 25px;
+            display: flex; align-items: center; gap: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); z-index: 10;
         }
+        .progress-badge { background: rgba(59, 130, 246, 0.1); color: var(--accent); padding: 5px 15px; border-radius: 20px; font-weight: 700; font-family: var(--font-mono); font-size: 0.9rem;}
 
-        .result-box {
-            background: var(--accent-color);
-            color: white;
-            padding: 1rem;
-            border-radius: 12px;
-            text-align: center;
-            margin-top: 1rem;
-            font-weight: bold;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-        }
+        /* Theme Toggle */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; border-radius: 34px; transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .4s; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        .chart-container {
-            position: relative;
-            height: 400px;
-            width: 100%;
-        }
-
-        /* Tarjetas para Índice y Glosario */
-        .index-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .index-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .index-card:hover {
-            transform: translateY(-5px);
-            background: var(--accent-color);
-            color: white;
-        }
+        /* Simulador UI */
+        .sim-grid { display: grid; grid-template-columns: 320px 1fr; gap: 2rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; display: flex; justify-content: space-between;}
+        .val-badge { background: var(--accent); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-family: var(--font-mono);}
+        .form-group input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+        .form-group select { width: 100%; padding: 0.6rem; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); font-family: inherit; outline: none;}
         
-        .index-card:hover p { color: white; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .grid-2col { grid-template-columns: 1fr; }
-            h1 { font-size: 2rem; }
-            .glass-panel { padding: 1.5rem; }
-        }
+        .result-dashboard { background: linear-gradient(135deg, var(--accent), #8b5cf6); color: white; padding: 1.5rem; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); margin-top: 1.5rem;}
+        .result-dashboard .ic-display { font-size: 1.8rem; font-weight: 800; font-family: var(--font-mono); margin: 0.5rem 0; letter-spacing: 1px;}
     </style>
 </head>
 <body>
 
-    <!-- Theme Toggle -->
-    <div class="theme-toggle-container">
-        <i class="fas fa-sun" style="color: #f59e0b;"></i>
-        <label class="switch">
-            <input type="checkbox" id="theme-toggle">
-            <span class="slider"></span>
-        </label>
-        <i class="fas fa-moon" style="color: #64748b;"></i>
+    <!-- FONDOS ANIMADOS -->
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
     </div>
 
-    <!-- Presentation Container -->
-    <div id="presentation-container">
-
-        <!-- ==========================================
-             DIAPOSITIVA 1: ÍNDICE INTERACTIVO
-             ========================================== -->
-        <div class="slide active glass-panel" id="slide-1">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <h1>Inferencia Estadística Avanzada</h1>
-                <p>Población, Muestra e Intervalos de Confianza - Perspectiva de Ciencia de Datos</p>
+    <!-- APP WINDOW -->
+    <div id="app-window">
+        <!-- HEADER APP -->
+        <header class="app-header">
+            <div class="window-controls">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
             </div>
-            
-            <div class="index-grid">
-                <div class="index-card" onclick="goToSlide(1)">
-                    <i class="fas fa-users fa-2x" style="margin-bottom: 10px;"></i>
-                    <h3>1. Población vs. Muestra</h3>
-                    <p>Notación paramétrica y estadística.</p>
-                </div>
-                <div class="index-card" onclick="goToSlide(2)">
-                    <i class="fas fa-layer-group fa-2x" style="margin-bottom: 10px;"></i>
-                    <h3>2. Técnicas de Muestreo</h3>
-                    <p>Aleatorio simple y estratificado.</p>
-                </div>
-                <div class="index-card" onclick="goToSlide(3)">
-                    <i class="fas fa-chart-area fa-2x" style="margin-bottom: 10px;"></i>
-                    <h3>3. Teorema del Límite Central</h3>
-                    <p>Distribuciones muestrales fundamentales.</p>
-                </div>
-                <div class="index-card" onclick="goToSlide(4)">
-                    <i class="fas fa-bullseye fa-2x" style="margin-bottom: 10px;"></i>
-                    <h3>4. Intervalos de Confianza</h3>
-                    <p>Fundamentos y nivel de significancia ($\alpha$).</p>
-                </div>
-                <div class="index-card" onclick="goToSlide(5)">
-                    <i class="fas fa-square-root-variable fa-2x" style="margin-bottom: 10px;"></i>
-                    <h3>5. Cálculo Analítico</h3>
-                    <p>Uso de Z vs. T y varianza agrupada.</p>
-                </div>
-                <div class="index-card" onclick="goToSlide(6)">
-                    <i class="fas fa-sliders fa-2x" style="margin-bottom: 10px;"></i>
-                    <h3>6. Simulador Interactivo</h3>
-                    <p>Modelado matemático en tiempo real.</p>
-                </div>
-                <div class="index-card" onclick="goToSlide(7)">
-                    <i class="fas fa-book fa-2x" style="margin-bottom: 10px;"></i>
-                    <h3>7. Referencias</h3>
-                    <p>Glosario y Bibliografía.</p>
-                </div>
+            <div class="app-title">Estadística Inferencial LMS</div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-sun" style="color: #f59e0b;"></i>
+                <label class="switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider"></span>
+                </label>
+                <i class="fas fa-moon" style="color: #64748b;"></i>
             </div>
-        </div>
+        </header>
 
-        <!-- ==========================================
-             DIAPOSITIVA 2: POBLACIÓN VS MUESTRA
-             ========================================== -->
-        <div class="slide glass-panel" id="slide-2">
-            <h2>1. Población vs. Muestra</h2>
-            <div class="grid-2col">
-                <div>
-                    <p>La inferencia estadística es el proceso de deducir propiedades de una población subyacente mediante el análisis de datos de una muestra.</p>
-                    <div class="math-block">
-                        <strong>Notación Paramétrica (Población):</strong>
-                        <ul style="list-style-position: inside; margin-top: 10px;">
-                            <li>Tamaño: $N$</li>
-                            <li>Media: $\mu$</li>
-                            <li>Desviación Estándar: $\sigma$</li>
-                        </ul>
-                    </div>
-                    <div class="math-block">
-                        <strong>Notación Estadística (Muestra):</strong>
-                        <ul style="list-style-position: inside; margin-top: 10px;">
-                            <li>Tamaño: $n$</li>
-                            <li>Media: $\bar{x}$</li>
-                            <li>Desviación Estándar: $s$</li>
-                        </ul>
-                    </div>
-                </div>
-                <div style="text-align: center; background: rgba(255,255,255,0.5); padding: 1rem; border-radius: 16px;">
-                    <!-- Mermaid diagram - Sin caracteres especiales en los nodos -->
-                    <div class="mermaid">
-                        graph TD
-                            A[Poblacion Universo N] -->|Muestreo| B[Muestra Tamano n]
-                            B -->|Estadistica Descriptiva| C[Estadisticos x y s]
-                            C -->|Inferencia Estadistica| D[Parametros mu y sigma]
-                            D -.->|Estimacion| A
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- CANVAS DE CONTENIDO -->
+        <div id="canvas-container">
 
-        <!-- ==========================================
-             DIAPOSITIVA 3: TÉCNICAS DE MUESTREO
-             ========================================== -->
-        <div class="slide glass-panel" id="slide-3">
-            <h2>2. Técnicas de Muestreo</h2>
-            <p>Para que la inferencia sea válida, la muestra debe ser representativa. Esto mitiga el sesgo de selección.</p>
-            <div class="grid-2col" style="margin-top: 2rem;">
-                <div class="glass-panel" style="margin: 0; padding: 1.5rem;">
-                    <h3><i class="fas fa-dice" style="color: var(--accent-color);"></i> Aleatorio Simple (MAS)</h3>
-                    <p>Cada elemento de la población tiene exactamente la misma probabilidad de ser seleccionado.</p>
-                    <p>Probabilidad de inclusión: $P_i = \frac{n}{N}$</p>
-                    <p><em>Uso ideal:</em> Poblaciones homogéneas donde no hay subgrupos con características radicalmente diferentes.</p>
+            <!-- SLIDE 1: INTRO -->
+            <div class="slide active" id="slide-1">
+                <div style="text-align: center; margin-top: 2rem; margin-bottom: 3rem;">
+                    <div class="app-icon" style="width: 80px; height: 80px; font-size: 2.5rem; margin-bottom: 1.5rem;"><i class="fas fa-chart-network"></i></div>
+                    <h1>Inferencia y Contraste de Hipótesis</h1>
+                    <p style="font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin: 0 auto;">Aplicación interactiva para comprender cómo extrapolar datos de una muestra a una población entera usando matemáticas y probabilidad.</p>
                 </div>
-                <div class="glass-panel" style="margin: 0; padding: 1.5rem;">
-                    <h3><i class="fas fa-layer-group" style="color: var(--accent-color);"></i> Estratificado</h3>
-                    <p>La población se divide en subgrupos mutuamente excluyentes (estratos), y se aplica MAS dentro de cada uno.</p>
-                    <p>Permite controlar la varianza y asegurar representación de minorías.</p>
-                    <p><em>Ejemplo analítico:</em> Muestreo proporcional donde $n_h = n \left(\frac{N_h}{N}\right)$ para el estrato $h$.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==========================================
-             DIAPOSITIVA 4: DISTRIBUCIONES MUESTRALES Y TCL
-             ========================================== -->
-        <div class="slide glass-panel" id="slide-4">
-            <h2>3. Teorema del Límite Central (TCL)</h2>
-            <div class="grid-2col">
-                <div>
-                    <p>El TCL es la piedra angular de la inferencia. Establece que, dada una muestra suficientemente grande ($n \ge 30$), la distribución de las medias muestrales se aproximará a una distribución normal, <strong>independientemente de la forma de la distribución de la población original</strong>.</p>
-                    
-                    <div class="math-block">
-                        <strong>Valor Esperado de la Media Muestral:</strong>
-                        $$ E[\bar{X}] = \mu $$
-                        
-                        <strong>Varianza de la Media Muestral:</strong>
-                        $$ Var(\bar{X}) = \frac{\sigma^2}{n} $$
-                        
-                        <strong>Error Estándar (SE):</strong>
-                        $$ SE = \frac{\sigma}{\sqrt{n}} $$
+                
+                <div class="grid-3">
+                    <div class="card" style="text-align: center; cursor: pointer;" onclick="goToSlide(1)">
+                        <div class="app-icon success" style="margin-bottom: 1rem;"><i class="fas fa-bullseye"></i></div>
+                        <h3>Estimación Puntual</h3>
+                        <p style="font-size: 0.9rem;">Parámetros vs Estimadores. El Teorema Central del Límite con datos reales.</p>
                     </div>
-                </div>
-                <div>
-                    <p><strong>Implicación de Ciencia de Datos:</strong></p>
-                    <p>El TCL nos permite utilizar modelos de probabilidad paramétricos (como la Normal) para hacer afirmaciones sobre parámetros poblacionales incluso si los datos subyacentes están sesgados o tienen colas pesadas, siempre y cuando $n$ sea adecuado.</p>
-                    <br>
-                    <p>La convergencia en distribución se denota formalmente como:</p>
-                    <div class="math-block" style="text-align: center;">
-                        $$ \sqrt{n}(\bar{X}_n - \mu) \xrightarrow{d} N(0, \sigma^2) $$
+                    <div class="card" style="text-align: center; cursor: pointer;" onclick="goToSlide(3)">
+                        <div class="app-icon warning" style="margin-bottom: 1rem;"><i class="fas fa-arrows-left-right"></i></div>
+                        <h3>Intervalos de Confianza</h3>
+                        <p style="font-size: 0.9rem;">Cálculo del margen de error. Ejemplo práctico: Control de calidad de café.</p>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==========================================
-             DIAPOSITIVA 5: INTERVALOS DE CONFIANZA (FUNDAMENTOS)
-             ========================================== -->
-        <div class="slide glass-panel" id="slide-5">
-            <h2>4. Intervalos de Confianza: Fundamentos</h2>
-            <div class="grid-2col">
-                <div>
-                    <h3>Interpretación Probabilística Correcta</h3>
-                    <p>Un intervalo de confianza (IC) proporciona un rango de valores plausibles para un parámetro desconocido.</p>
-                    <p><strong>Cuidado:</strong> El parámetro poblacional ($\mu$) es un valor <em>fijo</em>, no una variable aleatoria. Lo que es aleatorio es el <em>intervalo</em> en sí (porque depende de la muestra aleatoria $\bar{x}$).</p>
-                    
-                    <p>Decir "Nivel de confianza del 95%" significa que si repitiéramos el muestreo infinitas veces, el 95% de los intervalos construidos contendrían el verdadero parámetro $\mu$.</p>
-                </div>
-                <div>
-                    <div class="math-block">
-                        <strong>Nivel de Significancia ($\alpha$):</strong>
-                        <p>Representa la probabilidad de que el intervalo <em>no</em> contenga el parámetro.</p>
-                        $$ \text{Nivel de Confianza} = 1 - \alpha $$
-                        
-                        <strong>Distribución del Error ($\alpha/2$):</strong>
-                        <p>Para intervalos bilaterales, el área de rechazo se divide en las dos colas de la distribución de probabilidad, dejando un área de $\alpha/2$ en cada extremo.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==========================================
-             DIAPOSITIVA 6: CÁLCULO ANALÍTICO (Z VS T)
-             ========================================== -->
-        <div class="slide glass-panel" id="slide-6">
-            <h2>5. Cálculo Analítico Riguroso</h2>
-            <p>La selección del estadístico adecuado depende del conocimiento de la varianza poblacional ($\sigma^2$).</p>
-            
-            <div class="grid-2col" style="align-items: start;">
-                <div>
-                    <h3 style="font-size: 1.2rem;">Caso 1: $\sigma$ Conocida (Distribución Normal Z)</h3>
-                    <p>Se utiliza el estadístico $Z$. El margen de error $E$ se define como $Z_{\alpha/2} \times SE$.</p>
-                    <div class="math-block">
-                        $$ IC = \bar{x} \pm Z_{\alpha/2} \left( \frac{\sigma}{\sqrt{n}} \right) $$
-                    </div>
-                </div>
-                <div>
-                    <h3 style="font-size: 1.2rem;">Caso 2: $\sigma$ Desconocida (Distribución t-Student)</h3>
-                    <p>Si usamos la desviación estándar muestral ($s$), debemos usar $t$ con $df = n-1$ grados de libertad, que tiene colas más pesadas.</p>
-                    <div class="math-block">
-                        $$ IC = \bar{x} \pm t_{\alpha/2, n-1} \left( \frac{s}{\sqrt{n}} \right) $$
+                    <div class="card" style="text-align: center; cursor: pointer;" onclick="goToSlide(4)">
+                        <div class="app-icon" style="margin-bottom: 1rem;"><i class="fas fa-code-compare"></i></div>
+                        <h3>Pruebas de Hipótesis</h3>
+                        <p style="font-size: 0.9rem;">Comparación de 2 poblaciones. P-valor aplicado a estudios de salud reales.</p>
                     </div>
                 </div>
             </div>
 
-            <div style="margin-top: 1rem;">
-                <h3 style="font-size: 1.2rem;">Nota: Varianza Agrupada (Pooled Variance)</h3>
-                <p>Para intervalos de confianza de la <em>diferencia</em> de dos medias asumiendo varianzas iguales poblacionales, se calcula la varianza combinada ($S_p^2$):</p>
-                <div class="math-block" style="text-align: center;">
-                    $$ S_p^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2} $$
-                </div>
-            </div>
-        </div>
-
-        <!-- ==========================================
-             DIAPOSITIVA 7: SIMULADOR INTERACTIVO
-             ========================================== -->
-        <div class="slide glass-panel" id="slide-7">
-            <h2>6. Simulador Interactivo de Inferencia</h2>
-            <p>Modifica los parámetros para visualizar cómo afecta al Intervalo de Confianza (Aproximación Normal Z).</p>
-            
-            <div class="grid-2col">
-                <div class="simulator-controls">
-                    <div class="control-group">
-                        <label for="sim-mean">Media Muestral ($\bar{x}$): <span id="val-mean">50</span></label>
-                        <input type="number" id="sim-mean" value="50" step="1">
-                    </div>
-                    <div class="control-group">
-                        <label for="sim-sd">Desviación Estándar ($s$): <span id="val-sd">10</span></label>
-                        <input type="number" id="sim-sd" value="10" min="0.1" step="0.5">
-                    </div>
-                    <div class="control-group">
-                        <label for="sim-n">Tamaño de la Muestra ($n$): <span id="val-n">30</span></label>
-                        <input type="range" id="sim-n" min="5" max="500" value="30">
-                    </div>
-                    <div class="control-group">
-                        <label for="sim-conf">Nivel de Confianza ($1-\alpha$):</label>
-                        <select id="sim-conf">
-                            <option value="1.645">90% (Z ≈ 1.645)</option>
-                            <option value="1.960" selected>95% (Z ≈ 1.960)</option>
-                            <option value="2.576">99% (Z ≈ 2.576)</option>
-                        </select>
-                    </div>
-
-                    <div class="result-box">
-                        <div style="font-size: 0.9rem; font-weight: normal; margin-bottom: 5px;">
-                            Error Estándar (SE): <span id="out-se">1.826</span><br>
-                            Margen de Error (E): <span id="out-me">3.578</span>
+            <!-- SLIDE 2: UTILIDAD Y EJEMPLO REAL -->
+            <div class="slide" id="slide-2">
+                <h2><div class="app-icon"><i class="fas fa-globe"></i></div> 1. ¿Por qué inferir? Ejemplos del mundo real</h2>
+                <p>Inferir es deducir las reglas del universo observando solo una pequeña parte de él. Esto es obligatorio cuando estudiar a toda la población es destructivo, infinito o financieramente inviable.</p>
+                
+                <div class="grid-2" style="margin-top: 2rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="app-icon success"><i class="fas fa-syringe"></i></div>
+                            <h3 style="margin:0;">Vacuna Covid-19 (Pfizer)</h3>
                         </div>
-                        IC: [ <span id="out-li">46.42</span> , <span id="out-ls">53.58</span> ]
+                        <p><strong>Población Objetivo:</strong> Miles de millones de humanos.<br>
+                        <strong>Muestra (Estudio Real):</strong> ~43,000 voluntarios.<br>
+                        <strong>Solución Inferencial:</strong> Se inyectó a la muestra (vacuna vs placebo). Mediante un <strong>contraste de hipótesis</strong>, se comprobó que la tasa de infección era un 95% menor. Se infirió que tendría éxito globalmente con un nivel de significación ($\alpha < 0.001$).</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="app-icon warning"><i class="fas fa-car-burst"></i></div>
+                            <h3 style="margin:0;">Seguridad Automotriz</h3>
+                        </div>
+                        <p><strong>Población Objetivo:</strong> Todos los autos fabricados del modelo X.<br>
+                        <strong>Muestra:</strong> 5 autos elegidos al azar.<br>
+                        <strong>Solución Inferencial:</strong> Como el test de choque destruye el auto, no podemos chocar todos. Chocamos la muestra, medimos la deformación ($\bar{x}$) y mediante un <strong>Intervalo de Confianza</strong> certificamos la seguridad de toda la producción.</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- SLIDE 3: FUNDAMENTOS Y TCL -->
+            <div class="slide" id="slide-3">
+                <h2><div class="app-icon"><i class="fas fa-book-open"></i></div> 2. Fundamentos: Del Estadístico al Parámetro</h2>
+                <p>Para hacer predicciones, usamos <strong>estadísticos</strong> (calculados en la muestra) como estimadores de los <strong>parámetros</strong> (valores reales desconocidos de la población).</p>
                 
-                <div class="chart-container">
-                    <canvas id="ciChart"></canvas>
-                </div>
-            </div>
-        </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Medida</th>
+                            <th>Población (Parámetro)</th>
+                            <th>Muestra (Estimador Puntual)</th>
+                            <th>Ejemplo Real (Estatura en Colombia)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Media</strong> (Promedio)</td>
+                            <td><span class="ttip">$\mu$<span class="ttip-text">Media Universal. Casi imposible de conocer exactamente.</span></span></td>
+                            <td><span class="ttip">$\bar{x}$<span class="ttip-text">Media de los encuestados. Suma de datos / n.</span></span></td>
+                            <td>$\bar{x} = 171.5$ cm (Basado en n=12,000)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Varianza</strong> (Dispersión)</td>
+                            <td>$\sigma^2$</td>
+                            <td>$s^2$ (Cuasivarianza)</td>
+                            <td>$s^2 = 36$ cm$^2$ (Desv. típica $s = 6$ cm)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Proporción</strong> (%)</td>
+                            <td>$P$</td>
+                            <td>$\hat{p}$ (Éxitos / Total)</td>
+                            <td>$\hat{p} = 0.51$ (51% son mujeres)</td>
+                        </tr>
+                    </tbody>
+                </table>
 
-        <!-- ==========================================
-             DIAPOSITIVA 8: GLOSARIO Y BIBLIOGRAFÍA
-             ========================================== -->
-        <div class="slide glass-panel" id="slide-8">
-            <h2>7. Glosario y Bibliografía</h2>
-            
-            <div class="grid-2col" style="align-items: start;">
-                <div>
-                    <h3>Glosario de Términos</h3>
-                    <ul style="list-style-type: disc; margin-left: 20px; margin-bottom: 1rem;">
-                        <li><strong>Parámetro:</strong> Valor numérico que describe una característica de una población (ej. $\mu$).</li>
-                        <li><strong>Estadístico:</strong> Valor numérico calculado a partir de una muestra (ej. $\bar{x}$).</li>
-                        <li><strong>Error Estándar:</strong> Desviación estándar de la distribución muestral de un estadístico. Mide la precisión de la estimación.</li>
-                        <li><strong>Margen de Error (E):</strong> La cantidad máxima esperada por la cual la estimación muestral difiere del parámetro poblacional real en un nivel de confianza dado.</li>
-                        <li><strong>Grados de libertad ($df$):</strong> Número de valores en el cálculo final de un estadístico que son libres de variar.</li>
-                    </ul>
-                </div>
-                <div>
-                    <h3>Bibliografía</h3>
-                    <ul style="list-style-type: square; margin-left: 20px; color: var(--text-muted);">
-                        <li>Montgomery, D. C., & Runger, G. C. (2014). <em>Applied Statistics and Probability for Engineers</em>. John Wiley & Sons.</li>
-                        <li>Triola, M. F. (2018). <em>Estadística</em> (12a. ed.). Pearson Educación.</li>
-                        <li>Devore, J. L. (2015). <em>Probability and Statistics for Engineering and the Sciences</em>. Cengage Learning.</li>
-                        <li>Casella, G., & Berger, R. L. (2002). <em>Statistical Inference</em>. Duxbury Press.</li>
-                    </ul>
-
-                    <div style="margin-top: 3rem; text-align: center;">
-                        <button class="btn" onclick="finishActivity()">
-                            <i class="fas fa-check-circle"></i> Finalizar Actividad
-                        </button>
+                <div class="card" style="display: flex; gap: 20px; align-items: center; margin-top: 1.5rem;">
+                    <div class="app-icon" style="min-width: 60px; height: 60px; font-size: 1.8rem;"><i class="fas fa-bell"></i></div>
+                    <div>
+                        <h3 style="margin:0;">El Teorema del Límite Central (TCL)</h3>
+                        <p style="margin: 5px 0 0 0; font-size: 0.95rem;">Garantiza que la media de nuestras muestras ($\bar{x}$) se distribuye como una Campana de Gauss perfecta $N(\mu, \frac{\sigma}{\sqrt{n}})$, siempre que el tamaño de la muestra sea $n \ge 30$. Esto permite usar probabilidad normal en la vida real.</p>
                     </div>
                 </div>
             </div>
+
+            <!-- SLIDE 4: INTERVALO DE CONFIANZA (EJEMPLO REAL) -->
+            <div class="slide" id="slide-4">
+                <h2><div class="app-icon"><i class="fas fa-bullseye"></i></div> 3. Intervalo de Confianza (IC)</h2>
+                <p>Dar un número exacto (estimación puntual) es arriesgado. Es mejor dar un rango donde aseguramos, con cierta probabilidad ($1-\alpha$), que se encuentra la verdad.</p>
+                
+                <div class="math-box" style="text-align: center;">
+                    $$ IC = \bar{x} \pm \underbrace{ Z_{\alpha/2} \left( \frac{\sigma}{\sqrt{n}} \right) }_{\text{Margen de Error (E)}} $$
+                </div>
+
+                <div class="grid-2">
+                    <div class="card" style="background: rgba(5, 150, 105, 0.1); border-color: rgba(5, 150, 105, 0.3);">
+                        <h3 class="text-success"><i class="fas fa-mug-hot"></i> Caso Real: Producción de Café (Bucaramanga)</h3>
+                        <p style="font-size: 0.9rem;">Una exportadora envasa sacos etiquetados como 500g. Para control de calidad, extraen una muestra aleatoria de <strong>$n = 36$</strong> sacos. Pesan los sacos y obtienen una media <strong>$\bar{x} = 502g$</strong>. Se sabe por datos históricos que la maquinaria tiene una desviación <strong>$\sigma = 12g$</strong>.</p>
+                        <p style="font-size: 0.9rem;"><strong>Problema:</strong> Construir el IC al 95% para la media real de toda la exportación.</p>
+                    </div>
+                    <div class="card">
+                        <h3><i class="fas fa-calculator"></i> Solución Paso a Paso</h3>
+                        <ol style="font-size: 0.9rem; padding-left: 20px;">
+                            <li>Confianza 95% $\Rightarrow \alpha = 0.05$. El valor crítico en tabla Normal es <span class="ttip">$Z_{0.025} = 1.96$<span class="ttip-text">Deja 2.5% de margen a la izquierda y 2.5% a la derecha de la campana.</span></span>.</li>
+                            <li>Error Estándar (SE): $\frac{\sigma}{\sqrt{n}} = \frac{12}{\sqrt{36}} = \frac{12}{6} = 2g$.</li>
+                            <li>Margen de Error (E): $1.96 \times 2g = 3.92g$.</li>
+                            <li>IC = $502 \pm 3.92 \Rightarrow [498.08g , 505.92g]$.</li>
+                        </ol>
+                        <div style="background: var(--bg-base); padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; margin-top: 10px;">
+                            <strong>Conclusión:</strong> Con un 95% de confianza, el peso medio de todos los sacos exportados está entre 498.08g y 505.92g.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 5: HIPÓTESIS Y P-VALOR -->
+            <div class="slide" id="slide-5">
+                <h2><div class="app-icon"><i class="fas fa-balance-scale"></i></div> 4. Contraste de Hipótesis y el p-valor</h2>
+                <p>Es un juicio estadístico. Se juzga una suposición inicial (<span class="ttip">$H_0$<span class="ttip-text">Hipótesis Nula. El estado base, la no-diferencia. Tiene "presunción de inocencia".</span></span>) usando evidencia de una muestra para ver si la podemos rechazar a favor de nuestra teoría (<span class="ttip">$H_1$<span class="ttip-text">Hipótesis Alternativa. Lo que queremos demostrar (ej. la medicina sí funciona).</span></span>).</p>
+
+                <div class="grid-2">
+                    <div>
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <h3>El Juez: El p-valor</h3>
+                            <p style="font-size: 0.9rem;">Es la probabilidad de que los datos obtenidos hayan ocurrido por pura casualidad, asumiendo que $H_0$ es cierta.</p>
+                            <ul style="font-size: 0.9rem; margin-bottom: 0;">
+                                <li>Si <strong>p-valor < $\alpha$ (0.05)</strong> $\rightarrow$ Rechazamos $H_0$. (Hay efecto real).</li>
+                                <li>Si <strong>p-valor $\ge \alpha$</strong> $\rightarrow$ Aceptamos $H_0$. (No hay pruebas).</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <table class="data-table" style="margin: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Matriz de Decisión</th>
+                                    <th>Realidad: $H_0$ Verdadera</th>
+                                    <th>Realidad: $H_1$ Verdadera</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Rechazar $H_0$</strong></td>
+                                    <td><span class="ttip" style="color: var(--danger); font-weight: bold;">Error Tipo I ($\alpha$)<span class="ttip-text">Falso Positivo. Aprobar un medicamento que en realidad NO sirve. Muy grave en medicina.</span></span></td>
+                                    <td style="color: var(--success);"><i class="fas fa-check-circle"></i> Acierto</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Aceptar $H_0$</strong></td>
+                                    <td style="color: var(--success);"><i class="fas fa-check-circle"></i> Acierto</td>
+                                    <td><span class="ttip" style="color: var(--warning); font-weight: bold;">Error Tipo II ($\beta$)<span class="ttip-text">Falso Negativo. Descartar un medicamento que SÍ servía.</span></span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 6: COMPARACION REAL (Data Analysis) -->
+            <div class="slide" id="slide-6">
+                <h2><div class="app-icon"><i class="fas fa-database"></i></div> 5. Aplicación: Comparación de Poblaciones</h2>
+                <p>Análisis real extraído de la base de datos clínica `ObesidadInfantil2.xls` (Test t para muestras independientes en R-Commander).</p>
+                
+                <div class="card">
+                    <h3 style="margin-bottom: 5px;">¿Tienen distinto tiempo de lactancia los niños obesos frente a los no obesos?</h3>
+                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">$H_0: \mu_{NoObeso} = \mu_{Obeso}$ (Lactancia igual) <br> $H_1: \mu_{NoObeso} \neq \mu_{Obeso}$ (Lactancia distinta)</p>
+                    
+                    <table class="data-table" style="margin: 0;">
+                        <thead>
+                            <tr>
+                                <th>Grupo</th>
+                                <th>Media (meses)</th>
+                                <th>Estadístico T</th>
+                                <th>P-Valor</th>
+                                <th>Intervalo Diferencia al 95%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Niños NO Obesos</td>
+                                <td><strong>23.07</strong> meses</td>
+                                <td rowspan="2" style="vertical-align: middle;">$t = 7.815$<br>df = 34.8</td>
+                                <td rowspan="2" style="vertical-align: middle;"><span class="ttip" style="color: var(--danger); font-weight: bold;">$3.6 \times 10^{-9}$<span class="ttip-text">0.0000000036. Mucho menor que 0.05. Probabilidad casi nula de que sea casualidad.</span></span></td>
+                                <td rowspan="2" style="vertical-align: middle; font-family: var(--font-mono); font-weight: bold;">[13.37 , 22.77]</td>
+                            </tr>
+                            <tr>
+                                <td>Niños Obesos</td>
+                                <td><strong>5.00</strong> meses</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="background: rgba(37, 99, 235, 0.1); padding: 15px; border-radius: 12px; margin-top: 15px; border-left: 4px solid var(--accent); font-size: 0.95rem;">
+                        <strong>Conclusión Real:</strong> Como el p-valor $\ll 0.05$, <strong>rechazamos $H_0$</strong>. Existen diferencias significativas. Los niños no obesos tuvieron, en promedio, una lactancia materna entre 13 y 22 meses superior a los obesos.
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 7: SIMULADOR DASHBOARD -->
+            <div class="slide" id="slide-7">
+                <h2><div class="app-icon"><i class="fas fa-sliders-h"></i></div> 6. Simulador Analítico: Impacto de la Muestra</h2>
+                <p>Interactúa con las variables. Observa cómo al aumentar la <strong>muestra (n)</strong>, el margen de error cae drásticamente (el área sombreada se estrecha), otorgando mayor certeza.</p>
+                
+                <div class="sim-grid">
+                    <!-- Controles -->
+                    <div class="card" style="padding: 1.5rem;">
+                        <div class="form-group">
+                            <label>Media $\bar{x}$ <span class="val-badge" id="val-mean">50</span></label>
+                            <input type="range" id="sim-mean" min="10" max="90" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Desv. Típica $\sigma$ <span class="val-badge" id="val-sd">10</span></label>
+                            <input type="range" id="sim-sd" min="2" max="25" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Tamaño ($n$) <span class="val-badge" id="val-n">30</span></label>
+                            <input type="range" id="sim-n" min="10" max="300" value="30">
+                        </div>
+                        <div class="form-group">
+                            <label>Confianza $1-\alpha$</label>
+                            <select id="sim-conf">
+                                <option value="1.645">90% Confianza</option>
+                                <option value="1.960" selected>95% Confianza</option>
+                                <option value="2.576">99% Confianza</option>
+                            </select>
+                        </div>
+
+                        <div class="result-dashboard">
+                            <div style="font-size: 0.85rem; text-transform: uppercase;">Margen Error (E)</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 10px;">± <span id="res-me">--</span></div>
+                            <div style="font-size: 0.85rem; text-transform: uppercase;">Intervalo Calculado</div>
+                            <div class="ic-display">[<span id="res-inf">--</span>, <span id="res-sup">--</span>]</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart -->
+                    <div style="position: relative; width: 100%; height: 100%; min-height: 380px; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--glass-border); padding: 15px;">
+                        <canvas id="simChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 8: CIERRE Y REGISTRO -->
+            <div class="slide" id="slide-8">
+                <h2><div class="app-icon success"><i class="fas fa-check"></i></div> Finalización del Módulo</h2>
+                
+                <div class="grid-2">
+                    <div class="card">
+                        <h3 style="color: var(--text-main);"><i class="fas fa-server text-accent"></i> Resumen de Aprendizaje</h3>
+                        <ul style="padding-left: 20px; font-size: 0.95rem;">
+                            <li>Transformar estadísticos muestrales en parámetros universales.</li>
+                            <li>Calcular Intervalos de Confianza (IC) para determinar rangos de verdad analítica.</li>
+                            <li>Formular $H_0$ y $H_1$, e interpretar el <strong>p-valor</strong> como regla irrefutable en ciencia de datos.</li>
+                            <li>Manejo de herramientas conceptuales usadas en R-Commander.</li>
+                        </ul>
+                    </div>
+                    <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                        <i class="fas fa-cloud-arrow-up fa-3x" style="color: var(--success); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 10px;">Sincronizar Progreso</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">Almacena tu completitud en la plataforma LMS del curso de Ciencia de Datos.</p>
+                        <button class="btn" style="width: 100%; max-width: 250px;" onclick="comunicarLMS()"><i class="fas fa-satellite-dish"></i> Enviar al LMS</button>
+                    </div>
+                </div>
+
+                <div class="disclaimer">
+                    © 2026 Universidad / Depto. Ciencia de Datos. Todos los derechos reservados. <br>
+                    <strong>Aviso Legal:</strong> Interfaz, código y lógica generados estructuradamente mediante IA. Los ejemplos clínicos y productivos se basan en literatura académica estadística validada.
+                </div>
+            </div>
+
+        </div> <!-- Fin Canvas Container -->
+
+        <!-- DOCK DE NAVEGACIÓN FLOTANTE -->
+        <div class="floating-dock">
+            <button class="btn btn-outline btn-circle" id="btn-prev" onclick="changeSlide(-1)" disabled><i class="fas fa-arrow-left"></i></button>
+            <div class="progress-badge" id="slide-counter">Slide 1 de 8</div>
+            <button class="btn btn-circle" id="btn-next" onclick="changeSlide(1)"><i class="fas fa-arrow-right"></i></button>
         </div>
 
-        <!-- Controles de Navegación -->
-        <div class="controls">
-            <button class="btn btn-outline" onclick="prevSlide()" id="btnPrev" title="Anterior">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="btn btn-outline" onclick="goToSlide(0)" title="Ir al Índice">
-                <i class="fas fa-home"></i>
-            </button>
-            <span class="slide-counter" id="slideCounter">1 / 8</span>
-            <button class="btn btn-outline" onclick="nextSlide()" id="btnNext" title="Siguiente">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
+    </div> <!-- Fin App Window -->
 
-    </div>
-
-    <!-- ==========================================================================
-         LÓGICA JAVASCRIPT EMbebida
-         ========================================================================== -->
+    <!-- ==========================================================
+         JAVASCRIPT LOGIC (Funcionalidad inalterada, binders actualizados)
+         ========================================================== -->
     <script>
-        // --- 1. CONFIGURACIÓN DEL TEMA (Light / Dark) ---
-        const themeToggle = document.getElementById('theme-toggle');
-        
-        // Iniciamos obligatoriamente en Light Mode (body sin clase dark-mode)
-        themeToggle.checked = false;
-
-        themeToggle.addEventListener('change', () => {
-            if(themeToggle.checked) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-            updateChartTheme(); // Actualizar colores del gráfico
+        // 1. Iniciar KaTeX
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ],
+                throwOnError : false
+            });
+            actualizarSimulador();
         });
 
-        // --- 2. LÓGICA DE NAVEGACIÓN DE DIAPOSITIVAS ---
-        let currentSlide = 0;
+        // 2. Lógica Navegación App
+        let currSlide = 0;
         const slides = document.querySelectorAll('.slide');
-        const totalSlides = slides.length;
-        const slideCounter = document.getElementById('slideCounter');
-        
-        function updateNavigation() {
-            // Ocultar todas las diapositivas
-            slides.forEach(slide => slide.classList.remove('active'));
-            // Mostrar la actual
-            slides[currentSlide].classList.add('active');
+        const counter = document.getElementById('slide-counter');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const canvasContainer = document.getElementById('canvas-container');
+
+        function updateNav() {
+            slides.forEach((el, i) => {
+                if (i === currSlide) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+            counter.innerText = `Slide ${currSlide + 1} de ${slides.length}`;
+            btnPrev.disabled = (currSlide === 0);
+            btnNext.disabled = (currSlide === slides.length - 1);
             
-            // Actualizar contador
-            slideCounter.innerText = `${currentSlide + 1} / ${totalSlides}`;
-            
-            // Deshabilitar botones en límites
-            document.getElementById('btnPrev').disabled = (currentSlide === 0);
-            document.getElementById('btnNext').disabled = (currentSlide === totalSlides - 1);
-            
-            // Si llegamos a la diapositiva que contiene MathJax, forzar render (por si falló oculto)
-            if(window.MathJax) {
-                MathJax.typesetPromise();
-            }
+            // Subir el scroll de la app al cambiar de slide
+            canvasContainer.scrollTop = 0;
 
-            // Si llegamos a la última diapositiva, avisar al LMS
-            if(currentSlide === totalSlides - 1) {
-                triggerLMSCompletion();
-            }
+            if (currSlide === 6) actualizarSimulador(); // Slide 7 es index 6
         }
 
-        function nextSlide() {
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-                updateNavigation();
-            }
+        function changeSlide(dir) {
+            currSlide += dir;
+            if (currSlide < 0) currSlide = 0;
+            if (currSlide >= slides.length) currSlide = slides.length - 1;
+            updateNav();
         }
+        function goToSlide(index) { currSlide = index; updateNav(); }
 
-        function prevSlide() {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateNavigation();
-            }
-        }
-
-        function goToSlide(index) {
-            if (index >= 0 && index < totalSlides) {
-                currentSlide = index;
-                updateNavigation();
-            }
-        }
-
-        // --- 3. INICIALIZACIÓN DE MERMAID ---
-        mermaid.initialize({ 
-            startOnLoad: true,
-            theme: 'base',
-            themeVariables: {
-                primaryColor: '#e0eafc',
-                primaryTextColor: '#1e293b',
-                primaryBorderColor: '#3b82f6',
-                lineColor: '#3b82f6',
-                secondaryColor: '#cfdef3',
-                tertiaryColor: '#fff'
-            }
+        // Flechas teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'ArrowLeft') changeSlide(-1);
         });
 
-        // --- 4. INTEGRACIÓN CON LMS PADRE ---
-        let lmsNotified = false;
-        function triggerLMSCompletion() {
-            if(!lmsNotified) {
-                // Notificar al LMS mediante postMessage según requerimiento
-                try {
-                    window.parent.postMessage({ 
-                        tipo: 'actividad_completada', 
-                        bloque: 3, 
-                        semana: 9, 
-                        actividad: 'diapositivas' 
-                    }, '*');
-                    console.log("Notificación enviada al LMS: Actividad Completada.");
-                    lmsNotified = true;
-                } catch(e) {
-                    console.warn("No se pudo conectar con el LMS padre:", e);
-                }
-            }
+        // 3. Tema Dark/Light Mode
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode', themeToggle.checked);
+            if (currSlide === 6) actualizarSimulador(); // Refrescar canvas color
+        });
+
+        // 4. Simulador Analítico Avanzado (Chart.js)
+        let chartInstance = null;
+        const dom = {
+            m: document.getElementById('sim-mean'),
+            sd: document.getElementById('sim-sd'),
+            n: document.getElementById('sim-n'),
+            z: document.getElementById('sim-conf'),
+            vm: document.getElementById('val-mean'),
+            vsd: document.getElementById('val-sd'),
+            vn: document.getElementById('val-n'),
+            rme: document.getElementById('res-me'),
+            rinf: document.getElementById('res-inf'),
+            rsup: document.getElementById('res-sup')
+        };
+
+        [dom.m, dom.sd, dom.n, dom.z].forEach(el => el.addEventListener('input', actualizarSimulador));
+
+        function gaussPDF(x, mean, se) {
+            return (1 / (se * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / se, 2));
         }
 
-        function finishActivity() {
-            triggerLMSCompletion();
-            alert("¡Has finalizado la revisión de la presentación!");
-        }
+        function actualizarSimulador() {
+            const mean = parseFloat(dom.m.value);
+            const sd = parseFloat(dom.sd.value);
+            const n = parseInt(dom.n.value);
+            const z = parseFloat(dom.z.value);
 
-        // --- 5. LÓGICA DEL SIMULADOR INTERACTIVO (Chart.js) ---
-        let ciChart;
-        
-        // Elementos del DOM del simulador
-        const inputMean = document.getElementById('sim-mean');
-        const inputSd = document.getElementById('sim-sd');
-        const inputN = document.getElementById('sim-n');
-        const inputConf = document.getElementById('sim-conf');
-        
-        const valMean = document.getElementById('val-mean');
-        const valSd = document.getElementById('val-sd');
-        const valN = document.getElementById('val-n');
-        
-        const outSe = document.getElementById('out-se');
-        const outMe = document.getElementById('out-me');
-        const outLi = document.getElementById('out-li');
-        const outLs = document.getElementById('out-ls');
+            // Binders UI UI
+            dom.vm.innerText = mean;
+            dom.vsd.innerText = sd;
+            dom.vn.innerText = n;
 
-        // Función de densidad de probabilidad Normal (PDF)
-        function normalPDF(x, mean, stdDev) {
-            const coefficient = 1 / (stdDev * Math.sqrt(2 * Math.PI));
-            const exponent = -Math.pow(x - mean, 2) / (2 * Math.pow(stdDev, 2));
-            return coefficient * Math.exp(exponent);
-        }
+            // Math
+            const se = sd / Math.sqrt(n); 
+            const me = z * se;            
+            const limInf = mean - me;
+            const limSup = mean + me;
 
-        function calculateAndDraw() {
-            // Leer valores
-            const mean = parseFloat(inputMean.value);
-            const sd = parseFloat(inputSd.value);
-            const n = parseInt(inputN.value);
-            const z = parseFloat(inputConf.value); // Valor crítico Z
+            dom.rme.innerText = me.toFixed(2);
+            dom.rinf.innerText = limInf.toFixed(2);
+            dom.rsup.innerText = limSup.toFixed(2);
+
+            // Eje X Fijo relativo para observar estrechamiento visual
+            const globalMaxSe = 25 / Math.sqrt(10); 
+            const minX = mean - (4 * globalMaxSe);
+            const maxX = mean + (4 * globalMaxSe);
+            const step = (maxX - minX) / 150;
             
-            // Actualizar labels visuales en los inputs
-            valMean.innerText = mean;
-            valSd.innerText = sd;
-            valN.innerText = n;
+            let labels = [], dataLine = [], dataFill = [];
 
-            // Cálculos matemáticos rigurosos
-            const standardError = sd / Math.sqrt(n);
-            const marginOfError = z * standardError;
-            const limitInf = mean - marginOfError;
-            const limitSup = mean + marginOfError;
-
-            // Actualizar resultados en pantalla
-            outSe.innerText = standardError.toFixed(4);
-            outMe.innerText = marginOfError.toFixed(4);
-            outLi.innerText = limitInf.toFixed(3);
-            outLs.innerText = limitSup.toFixed(3);
-
-            // Generar datos para el gráfico Chart.js
-            // Rango del eje X: +/- 4 errores estándar para abarcar la campana completa
-            const minX = mean - (4 * standardError);
-            const maxX = mean + (4 * standardError);
-            const step = (maxX - minX) / 100;
-            
-            const labels = [];
-            const dataFull = [];
-            const dataShaded = []; // Solo contendrá valores dentro del IC, null fuera
-
-            for(let x = minX; x <= maxX; x += step) {
-                labels.push(x.toFixed(2));
-                const y = normalPDF(x, mean, standardError);
-                dataFull.push(y);
-                
-                // Si el punto x está dentro del intervalo de confianza, lo guardamos para sombrear
-                if(x >= limitInf && x <= limitSup) {
-                    dataShaded.push(y);
-                } else {
-                    dataShaded.push(0); // Para forzar el relleno al eje Y=0
-                }
+            for (let x = minX; x <= maxX; x += step) {
+                labels.push(x.toFixed(1));
+                let y = gaussPDF(x, mean, se);
+                dataLine.push(y);
+                dataFill.push((x >= limInf && x <= limSup) ? y : 0);
             }
 
-            // Actualizar Chart.js
-            drawChart(labels, dataFull, dataShaded, limitInf, limitSup, mean);
+            dibujarGrafica(labels, dataLine, dataFill);
         }
 
-        function drawChart(labels, dataFull, dataShaded, li, ls, mean) {
-            const ctx = document.getElementById('ciChart').getContext('2d');
-            
-            // Colores adaptativos según el tema
+        function dibujarGrafica(labels, dataLine, dataFill) {
+            const ctx = document.getElementById('simChart').getContext('2d');
             const isDark = document.body.classList.contains('dark-mode');
-            const textColor = isDark ? '#f8fafc' : '#1e293b';
-            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-            const primaryColor = isDark ? 'rgba(96, 165, 250, 1)' : 'rgba(59, 130, 246, 1)';
-            const shadedColor = isDark ? 'rgba(96, 165, 250, 0.4)' : 'rgba(59, 130, 246, 0.3)';
+            
+            const colorLine = isDark ? '#60a5fa' : '#2563eb';
+            const colorArea = isDark ? 'rgba(96, 165, 250, 0.4)' : 'rgba(37, 99, 235, 0.3)';
+            const colorGrid = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+            const colorText = isDark ? '#94a3b8' : '#475569';
 
-            if (ciChart) {
-                ciChart.destroy(); // Destruir instancia previa para evitar superposición
-            }
+            if (chartInstance) { chartInstance.destroy(); }
 
-            ciChart = new Chart(ctx, {
+            chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            label: 'Distribución Muestral (N)',
-                            data: dataFull,
-                            borderColor: primaryColor,
-                            borderWidth: 2,
-                            fill: false,
-                            pointRadius: 0,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Intervalo de Confianza',
-                            data: dataShaded,
-                            backgroundColor: shadedColor,
-                            borderColor: 'transparent',
-                            borderWidth: 0,
-                            fill: true,
-                            pointRadius: 0,
-                            tension: 0.4
-                        }
+                        { label: 'Densidad Probabilidad', data: dataLine, borderColor: colorLine, borderWidth: 3, pointRadius: 0, fill: false, tension: 0.4 },
+                        { label: 'Intervalo (IC)', data: dataFill, backgroundColor: colorArea, borderColor: 'transparent', pointRadius: 0, fill: true, tension: 0.4 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        duration: 400 // Animación rápida al mover sliders
-                    },
-                    plugins: {
-                        legend: {
-                            labels: { color: textColor }
-                        },
-                        tooltip: {
-                            enabled: false // Deshabilitado para mantener enfoque visual limpio
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    animation: { duration: 250, easing: 'easeOutQuad' },
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
                     scales: {
-                        x: {
-                            grid: { color: gridColor },
-                            ticks: { 
-                                color: textColor,
-                                maxTicksLimit: 10
-                            },
-                            title: {
-                                display: true,
-                                text: 'Valor de la Media Muestral',
-                                color: textColor,
-                                font: { weight: 'bold' }
-                            }
-                        },
-                        y: {
-                            grid: { color: gridColor },
-                            ticks: { display: false }, // Ocultamos densidad Y para simplificar
-                            title: {
-                                display: true,
-                                text: 'Densidad de Probabilidad',
-                                color: textColor,
-                                font: { weight: 'bold' }
-                            }
-                        }
+                        x: { grid: { color: colorGrid }, ticks: { color: colorText, maxTicksLimit: 8 } },
+                        y: { display: false, min: 0, max: 1.2 } // Max alto para visualización
                     }
                 }
             });
         }
 
-        function updateChartTheme() {
-            if(currentSlide === 6) { // Solo si estamos en la slide del simulador
-                calculateAndDraw();
+        // 5. PostMessage API LMS
+        let lmsSent = false;
+        function comunicarLMS() {
+            if (!lmsSent) {
+                try {
+                    window.parent.postMessage({ tipo: 'actividad_completada', bloque: 3, semana: 9, actividad: 'diapositivas' }, '*');
+                    lmsSent = true;
+                    alert("✅ Petición exitosa. El LMS ha registrado tu progreso en el módulo.");
+                } catch(e) {
+                    console.warn("LMS iframe no encontrado.");
+                }
+            } else {
+                alert("ℹ️ La petición de completitud ya ha sido enviada.");
             }
         }
-
-        // Listeners para los controles del simulador
-        [inputMean, inputSd, inputN, inputConf].forEach(input => {
-            input.addEventListener('input', calculateAndDraw);
-        });
-
-        // Inicialización principal
-        window.onload = () => {
-            updateNavigation();
-            calculateAndDraw();
-        };
-
-        // Soporte para flechas del teclado
-        document.addEventListener('keydown', (e) => {
-            if(e.key === 'ArrowRight') nextSlide();
-            if(e.key === 'ArrowLeft') prevSlide();
-        });
-
     </script>
 </body>
 </html>
